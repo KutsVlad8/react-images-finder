@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { TextContainer, Text } from './App.styled';
 import { getImages } from '../servise/api';
 import { Searchbar } from '../Searchbar/Searchbar';
@@ -7,114 +7,91 @@ import { Modal } from '../Modal/Modal';
 import { LoadMore } from '../Button/Button';
 import { Loader } from '../Loader/Loader';
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    totalHits: null,
-    error: null,
-    loading: false,
-    showModal: false,
-    modalImg: null,
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalHits, setTotalHits] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalImg, setModalImg] = useState(null);
+
+  const handleSubmitForm = query => {
+    setQuery(query);
+    setImages([]);
+    setPage(1);
+    setTotalHits(null);
+    setError(null);
+    setLoading(false);
+    setShowModal(false);
+    setModalImg(null);
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const prevQuery = prevState.query;
-    const nextQuery = this.state.query;
-    const prevPage = prevState.page;
-    const nextState = this.state;
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
 
-    if (prevQuery !== nextQuery) {
-      this.setState({ loading: true });
+  const openModal = img => {
+    setModalImg(img.largeImageURL);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    if (query === '') {
+      return;
+    }
+
+    async function fetch() {
+      setLoading(true);
 
       try {
-        const array = await getImages(this.state.query, this.state.page);
-        this.setState({ images: array.hits, totalHits: array.totalHits });
+        const data = await getImages(query, page);
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        setTotalHits(data.totalHits);
       } catch (error) {
-        console.dir(error);
-        this.setState({ error: error });
+        setError(error.message);
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     }
 
-    if (prevPage !== nextState.page) {
-      this.setState({ loading: true });
+    fetch();
+  }, [query, page]);
 
-      try {
-        const array = await getImages(this.state.query, this.state.page);
-        this.setState(prevState => ({
-          images:
-            this.state.page === 1
-              ? array.hits
-              : [...prevState.images, ...array.hits],
-        }));
-      } catch (error) {
-        this.setState({ error: error });
-      } finally {
-        this.setState({ loading: false });
-      }
-    }
-  }
+  return (
+    <div>
+      <Searchbar onSubmit={handleSubmitForm} />
 
-  handleSubmitForm = query => {
-    this.setState({
-      query,
-      images: [],
-      page: 1,
-      totalHits: null,
-      error: null,
-      loading: false,
-      showModal: false,
-      modalImg: null,
-    });
-  };
+      {totalHits === 0 && (
+        <TextContainer>
+          <Text>По вашему запросу {query} ни чего не найдено</Text>
+        </TextContainer>
+      )}
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
+      {error && (
+        <TextContainer>
+          <Text>{error}</Text>
+        </TextContainer>
+      )}
 
-  openModal = img => {
-    this.setState({ modalImg: img.largeImageURL, showModal: true });
-  };
+      {images && <ImageGallery images={images} onClick={openModal} />}
 
-  closeModal = () => {
-    this.setState({ showModal: false });
-  };
+      {loading && <Loader />}
 
-  render() {
-    const { images, error, loading, page, totalHits } = this.state;
-    return (
-      <div>
-        <Searchbar onSubmit={this.handleSubmitForm} />
+      {totalHits / images.length > page && (
+        <LoadMore onClick={handleLoadMore} />
+      )}
 
-        {totalHits === 0 && (
-          <TextContainer>
-            <Text>По вашему запросу {this.state.query} ни чего не найдено</Text>
-          </TextContainer>
-        )}
-
-        {error && (
-          <TextContainer>
-            <Text>{error}</Text>
-          </TextContainer>
-        )}
-
-        {images && <ImageGallery images={images} onClick={this.openModal} />}
-
-        {loading && <Loader />}
-
-        {totalHits / images.length > page && (
-          <LoadMore onClick={this.handleLoadMore} />
-        )}
-
-        {this.state.showModal && (
-          <Modal onClose={this.closeModal}>
-            <img src={this.state.modalImg} alt="" />
-          </Modal>
-        )}
-      </div>
-    );
-  }
-}
+      {showModal && (
+        <Modal onClose={closeModal}>
+          <img src={modalImg} alt="" />
+        </Modal>
+      )}
+    </div>
+  );
+};
