@@ -25,7 +25,7 @@ export const Searchbar = ({ onSubmit }) => {
       return;
     }
 
-    onSubmit(trimQuery);
+    onSubmit(trimQuery.toLowerCase());
     setQuery('');
   };
 

@@ -6,6 +6,7 @@ import { ImageGallery } from '../ImageGallery/ImageGallery';
 import { Modal } from '../Modal/Modal';
 import { LoadMore } from '../Button/Button';
 import { Loader } from '../Loader/Loader';
+import Notiflix from 'notiflix';
 
 export const App = () => {
   const [query, setQuery] = useState('');
@@ -17,8 +18,14 @@ export const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalImg, setModalImg] = useState(null);
 
-  const handleSubmitForm = query => {
-    setQuery(query);
+  const handleSubmitForm = newQuery => {
+    if (newQuery === query) {
+      Notiflix.Notify.info(
+        `Изображения по запросу  ${newQuery} уже отображались.`
+      );
+      return;
+    }
+    setQuery(newQuery);
     setImages([]);
     setPage(1);
     setTotalHits(null);
