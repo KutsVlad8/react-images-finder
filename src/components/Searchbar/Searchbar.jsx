@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { useState } from 'react';
 import {
   Header,
   SearchForm,
@@ -6,53 +6,47 @@ import {
   SearchFormButtonLabel,
   SearchFormInput,
 } from './Searchbar.styled';
-
 import { ImSearch } from 'react-icons/im';
-
 import Notiflix from 'notiflix';
 
-export class Searchbar extends Component {
-  state = {
-    query: '',
+export const Searchbar = ({ onSubmit }) => {
+  const [query, setQuery] = useState('');
+
+  const changeInput = event => {
+    setQuery(event.currentTarget.value);
   };
 
-  changeInput = event => {
-    this.setState({ query: event.currentTarget.value });
-  };
-
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
-    const trimQuery = this.state.query.trim();
+    const trimQuery = query.trim();
 
     if (trimQuery === '') {
       Notiflix.Notify.failure('Поле ввода пустое');
       return;
     }
-    // Notiflix.Notify.success(`вот что мы нашли по запросу ${this.state.query}`);
-    this.props.onSubmit(trimQuery);
-    this.setState({ query: '' });
+
+    onSubmit(trimQuery);
+    setQuery('');
   };
 
-  render() {
-    return (
-      <Header>
-        <SearchForm onSubmit={this.handleSubmit}>
-          <SearchFormButton type="submit">
-            <ImSearch size={24} />
-            <SearchFormButtonLabel>Search</SearchFormButtonLabel>
-          </SearchFormButton>
+  return (
+    <Header>
+      <SearchForm onSubmit={handleSubmit}>
+        <SearchFormButton type="submit">
+          <ImSearch size={24} />
+          <SearchFormButtonLabel>Search</SearchFormButtonLabel>
+        </SearchFormButton>
 
-          <SearchFormInput
-            name="query"
-            value={this.state.query}
-            type="text"
-            autocomplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            onChange={this.changeInput}
-          />
-        </SearchForm>
-      </Header>
-    );
-  }
-}
+        <SearchFormInput
+          name="query"
+          value={query}
+          type="text"
+          autocomplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          onChange={changeInput}
+        />
+      </SearchForm>
+    </Header>
+  );
+};
