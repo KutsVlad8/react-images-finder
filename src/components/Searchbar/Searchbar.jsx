@@ -6,6 +6,7 @@ import {
   SearchFormButtonLabel,
   SearchFormInput,
 } from './Searchbar.styled';
+import PropTypes from 'prop-types';
 import { ImSearch } from 'react-icons/im';
 import Notiflix from 'notiflix';
 
@@ -49,4 +50,8 @@ export const Searchbar = ({ onSubmit }) => {
       </SearchForm>
     </Header>
   );
+};
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func,
 };

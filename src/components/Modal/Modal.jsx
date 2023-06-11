@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Overlay, ModalContent } from './Modal.styled';
+import PropTypes from 'prop-types';
 
 export const Modal = ({ children, onClose }) => {
   useEffect(() => {
@@ -28,4 +29,8 @@ export const Modal = ({ children, onClose }) => {
       <ModalContent>{children}</ModalContent>
     </Overlay>
   );
+};
+
+Modal.propTypes = {
+  onClose: PropTypes.func,
 };
