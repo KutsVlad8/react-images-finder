@@ -1,1 +1,1 @@
-# goit-react-hw-04-images
+# react-image-finder
